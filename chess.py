@@ -8,8 +8,12 @@ SCREEN_HEIGHT = 640
 
 BLACK = (0, 0, 0)
 WHITE = (255, 255, 255)
+DARK_BROWN = (75, 57, 41)
+LIGHT_BROWN = (154, 132, 104)
+DARK_GRAY = (52, 52, 52)
+LIGHT_GRAY = (92, 92, 92)
 
-SCALE = 0.4
+SCALE = 0.25
 
 def rescale(img):
     w, h = img.get_size()
@@ -55,8 +59,8 @@ class Board():
         ]
 
 
-    def draw_board(self):
-        self.draw_grid()
+    def drawBoard(self):
+        self.drawGrid()
 
         aux = {
             "WP" : (self.WHITE_PAWN, self.whitePawnRect),
@@ -70,7 +74,7 @@ class Board():
             "BB" : (self.BLACK_BISHOP, self.blackBishopRect),
             "BN" : (self.BLACK_KNIGHT, self.blackKnightRect),
             "BQ" : (self.BLACK_QUEEN, self.blackQueenRect),
-            "BK" : (self.WHITE_KING, self.blackKingRect)
+            "BK" : (self.BLACK_KING, self.blackKingRect)
         }
 
         for i in range(8):
@@ -80,19 +84,19 @@ class Board():
                     SCREEN_SURF.blit(aux[self.BOARD[i][j]][0], aux[self.BOARD[i][j]][1])
 
 
-    def draw_grid(self):
-        color = BLACK
-        for sqr_y in range(0, 640, 80):
-            if color == WHITE:
-                color = BLACK
+    def drawGrid(self):
+        color = DARK_BROWN
+        for sqrY in range(0, 640, 80):
+            if color == LIGHT_BROWN:
+                color = DARK_BROWN
             else:
-                color = WHITE
-            for sqr_x in range(0, 640, 80):
-                pygame.draw.rect(SCREEN_SURF, color, (sqr_x, sqr_y, 80, 80))
-                if color == WHITE:
-                    color = BLACK
+                color = LIGHT_BROWN
+            for sqrX in range(0, 640, 80):
+                pygame.draw.rect(SCREEN_SURF, color, (sqrX, sqrY, 80, 80))
+                if color == LIGHT_BROWN:
+                    color = DARK_BROWN
                 else:
-                    color = WHITE
+                    color = LIGHT_BROWN
 
 class Chess():
     def main(self):
@@ -104,7 +108,7 @@ class Chess():
         FPS_CLOCK = pygame.time.Clock()
 
         BOARD = Board()
-        BOARD.draw_board()
+        BOARD.drawBoard()
         pygame.display.update()
 
         while True:
