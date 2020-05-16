@@ -12,12 +12,16 @@ DARK_BROWN = (75, 57, 41)
 LIGHT_BROWN = (154, 132, 104)
 DARK_GRAY = (52, 52, 52)
 LIGHT_GRAY = (92, 92, 92)
+BLUE = (0 , 0, 255)
 
 SCALE = 0.18
+
+SQUARE_SIDE = 80
 
 def rescale(img):
     w, h = img.get_size()
     return pygame.transform.smoothscale(img, (int(w * SCALE), int(h * SCALE)))
+
 
 class Board():
     def __init__(self):
@@ -58,11 +62,7 @@ class Board():
             ["WR", "WN", "WB", "WQ", "WK", "WB", "WN", "WR"],
         ]
 
-
-    def drawBoard(self):
-        self.drawGrayGrid()
-
-        aux = {
+        self.sprites = {
             "WP" : (self.WHITE_PAWN, self.whitePawnRect),
             "WR" : (self.WHITE_ROOK, self.whiteRookRect),
             "WB" : (self.WHITE_BISHOP, self.whiteBishopRect),
@@ -77,60 +77,82 @@ class Board():
             "BK" : (self.BLACK_KING, self.blackKingRect)
         }
 
+    def drawGrid(self, lightColor, darkColor):
+        color = darkColor
+        for sqrY in range(0, 640, 80):
+            if color == lightColor:
+                color = darkColor
+            else:
+                color = lightColor
+            for sqrX in range(0, 640, 80):
+                pygame.draw.rect(SCREEN_SURF, color, (sqrX, sqrY, SQUARE_SIDE, SQUARE_SIDE))
+                if color == lightColor:
+                    color = darkColor
+                else:
+                    color = lightColor
+
+    def drawBoard(self):
+        self.drawGrid(LIGHT_GRAY, DARK_GRAY)
+
         for i in range(8):
             for j in range(8):
                 if self.BOARD[i][j] != -1:
-                    aux[self.BOARD[i][j]][1].center = ((j*80)+40, (i*80)+40)
-                    SCREEN_SURF.blit(aux[self.BOARD[i][j]][0], aux[self.BOARD[i][j]][1])
+                    self.sprites[self.BOARD[i][j]][1].center = ((j*SQUARE_SIDE)+40, (i*SQUARE_SIDE)+40)
+                    SCREEN_SURF.blit(self.sprites[self.BOARD[i][j]][0], self.sprites[self.BOARD[i][j]][1])
 
 
-    def drawGrayGrid(self):
-        color = DARK_GRAY
-        for sqrY in range(0, 640, 80):
-            if color == LIGHT_GRAY:
-                color = DARK_GRAY
-            else:
-                color = LIGHT_GRAY
-            for sqrX in range(0, 640, 80):
-                pygame.draw.rect(SCREEN_SURF, color, (sqrX, sqrY, 80, 80))
-                if color == LIGHT_GRAY:
-                    color = DARK_GRAY
-                else:
-                    color = LIGHT_GRAY
+    def highlightSquare(self, coordX, coordY):
+        squareIndexX = coordX // 80
+        squareIndexY = coordY // 80
+        pygame.draw.rect(SCREEN_SURF, BLUE, (squareIndexX*80, squareIndexY*80, SQUARE_SIDE, SQUARE_SIDE), 6)
 
 
-    def drawBrownGrid(self):
-        color = DARK_BROWN
-        for sqrY in range(0, 640, 80):
-            if color == LIGHT_BROWN:
-                color = DARK_BROWN
-            else:
-                color = LIGHT_BROWN
-            for sqrX in range(0, 640, 80):
-                pygame.draw.rect(SCREEN_SURF, color, (sqrX, sqrY, 80, 80))
-                if color == LIGHT_BROWN:
-                    color = DARK_BROWN
-                else:
-                    color = LIGHT_BROWN
+    def movePiece(self, startCoords, endCoords):
+        startIndexX = startCoords[0] // 80
+        startIndexY = startCoords[1] // 80
+        endIndexX = endCoords[0] // 80
+        endIndexY = endCoords[1] // 80
+
+        self.BOARD[endIndexY][endIndexX] = self.BOARD[startIndexY][startIndexX]
+        self.BOARD[startIndexY][startIndexX] = -1
 
 class Chess():
     def main(self):
         global FPS_CLOCK, SCREEN_SURF
-
         pygame.display.set_caption("Chess")
         SCREEN_SURF = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-
         FPS_CLOCK = pygame.time.Clock()
 
         BOARD = Board()
-        BOARD.drawBoard()
-        pygame.display.update()
+
+        mouseX = 0
+        mouseY = 0
+
+        firstSelection = None
 
         while True:
+            mouseClicked = False
+
+            BOARD.drawBoard()
+
             for event in pygame.event.get():
                 if event.type == pygame.QUIT or (event.type == KEYUP and event.key == K_ESCAPE):
                     pygame.quit()
                     sys.exit()
+                elif event.type == MOUSEMOTION:
+                    mouseX, mouseY = event.pos
+                elif event.type == MOUSEBUTTONUP:
+                    mouseX, mouseY = event.pos
+                    mouseClicked = True
+            
+            BOARD.highlightSquare(mouseX, mouseY)
+
+            if mouseClicked:
+                if firstSelection == None:
+                    firstSelection = (mouseX, mouseY)
+                else:
+                    BOARD.movePiece(firstSelection, (mouseX, mouseY))
+                    firstSelection = None
 
             pygame.display.update()
             FPS_CLOCK.tick(FPS)
