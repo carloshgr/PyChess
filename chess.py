@@ -13,7 +13,7 @@ LIGHT_BROWN = (154, 132, 104)
 DARK_GRAY = (52, 52, 52)
 LIGHT_GRAY = (92, 92, 92)
 
-SCALE = 0.25
+SCALE = 0.18
 
 def rescale(img):
     w, h = img.get_size()
@@ -60,7 +60,7 @@ class Board():
 
 
     def drawBoard(self):
-        self.drawGrid()
+        self.drawGrayGrid()
 
         aux = {
             "WP" : (self.WHITE_PAWN, self.whitePawnRect),
@@ -84,7 +84,22 @@ class Board():
                     SCREEN_SURF.blit(aux[self.BOARD[i][j]][0], aux[self.BOARD[i][j]][1])
 
 
-    def drawGrid(self):
+    def drawGrayGrid(self):
+        color = DARK_GRAY
+        for sqrY in range(0, 640, 80):
+            if color == LIGHT_GRAY:
+                color = DARK_GRAY
+            else:
+                color = LIGHT_GRAY
+            for sqrX in range(0, 640, 80):
+                pygame.draw.rect(SCREEN_SURF, color, (sqrX, sqrY, 80, 80))
+                if color == LIGHT_GRAY:
+                    color = DARK_GRAY
+                else:
+                    color = LIGHT_GRAY
+
+
+    def drawBrownGrid(self):
         color = DARK_BROWN
         for sqrY in range(0, 640, 80):
             if color == LIGHT_BROWN:
