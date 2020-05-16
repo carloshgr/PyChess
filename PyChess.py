@@ -22,7 +22,6 @@ def rescale(img):
     w, h = img.get_size()
     return pygame.transform.smoothscale(img, (int(w * SCALE), int(h * SCALE)))
 
-
 class Board():
     def __init__(self):
         self.WHITE_PAWN = rescale(pygame.image.load("white-pawn.png"))
@@ -100,23 +99,27 @@ class Board():
                     self.sprites[self.BOARD[i][j]][1].center = ((j*SQUARE_SIDE)+40, (i*SQUARE_SIDE)+40)
                     SCREEN_SURF.blit(self.sprites[self.BOARD[i][j]][0], self.sprites[self.BOARD[i][j]][1])
 
-
     def highlightSquare(self, coordX, coordY):
-        squareIndexX = coordX // 80
-        squareIndexY = coordY // 80
-        pygame.draw.rect(SCREEN_SURF, BLUE, (squareIndexX*80, squareIndexY*80, SQUARE_SIDE, SQUARE_SIDE), 6)
-
+        squareIndexX, squareIndexY = self.getBoardIndex(coordX, coordY)
+        pygame.draw.rect(SCREEN_SURF, BLUE, (squareIndexX*SQUARE_SIDE, squareIndexY*SQUARE_SIDE, SQUARE_SIDE, SQUARE_SIDE), 6)
 
     def movePiece(self, startCoords, endCoords):
-        startIndexX = startCoords[0] // 80
-        startIndexY = startCoords[1] // 80
-        endIndexX = endCoords[0] // 80
-        endIndexY = endCoords[1] // 80
+        startIndexX, startIndexY = self.getBoardIndex(startCoords[0], startCoords[1])
+        endIndexX, endIndexY = self.getBoardIndex(endCoords[0], endCoords[1])
 
         self.BOARD[endIndexY][endIndexX] = self.BOARD[startIndexY][startIndexX]
         self.BOARD[startIndexY][startIndexX] = -1
 
-class Chess():
+    def getBoardIndex(self, coordX, coordY):
+        return (coordX // SQUARE_SIDE, coordY // SQUARE_SIDE)
+
+    def isSquareEmpty(self, coordX, coordY):
+        squareIndexX, squareIndexY = self.getBoardIndex(coordX, coordY)
+        
+        return True if self.BOARD[squareIndexY][squareIndexX] == -1 else False
+
+
+class PyChess():
     def main(self):
         global FPS_CLOCK, SCREEN_SURF
         pygame.display.set_caption("Chess")
@@ -148,11 +151,15 @@ class Chess():
             BOARD.highlightSquare(mouseX, mouseY)
 
             if mouseClicked:
-                if firstSelection == None:
+                if firstSelection == None and not BOARD.isSquareEmpty(mouseX, mouseY):
                     firstSelection = (mouseX, mouseY)
                 else:
-                    BOARD.movePiece(firstSelection, (mouseX, mouseY))
-                    firstSelection = None
+                    if firstSelection != None:
+                        BOARD.movePiece(firstSelection, (mouseX, mouseY))
+                        firstSelection = None
+
+            if firstSelection != None:
+                BOARD.highlightSquare(firstSelection[0], firstSelection[1])
 
             pygame.display.update()
             FPS_CLOCK.tick(FPS)
@@ -161,5 +168,5 @@ class Chess():
 if __name__ == "__main__":
     pygame.init()
 
-    game = Chess()
+    game = PyChess()
     game.main()
